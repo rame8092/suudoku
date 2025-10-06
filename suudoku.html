@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>数独パズル 判定機能付き</title>
+<style>
+  table { border-collapse: collapse; margin: 20px 0; }
+  td {
+    border: 1px solid black;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    font-size: 20px;
+  }
+  input {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    text-align: center;
+    border: none;
+  }
+  td.border-right {
+    border-right: 2px solid black;
+  }
+  tr.border-bottom td {
+    border-bottom: 2px solid black;
+  }
+  .fixed {
+    font-weight: bold;
+  }
+  button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    font-size: 16px;
+  }
+  #result {
+    margin-top: 10px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h2>数独パズル</h2>
+<table id="sudoku"></table>
+
+<button id="checkBtn">判定</button>
+<p id="result"></p>
+
+<script>
+const puzzle = [
+  [5,3,0, 0,7,0, 0,0,0],
+  [6,0,0, 1,9,5, 0,0,0],
+  [0,9,8, 0,0,0, 0,6,0],
+
+  [8,0,0, 0,6,0, 0,0,3],
+  [4,0,0, 8,0,3, 0,0,1],
+  [7,0,0, 0,2,0, 0,0,6],
+
+  [0,6,0, 0,0,0, 2,8,0],
+  [0,0,0, 4,1,9, 0,0,5],
+  [0,0,0, 0,8,0, 0,7,9],
+];
+
+// 正解の盤面（判定用）
+const solution = [
+  [5,3,4, 6,7,8, 9,1,2],
+  [6,7,2, 1,9,5, 3,4,8],
+  [1,9,8, 3,4,2, 5,6,7],
+
+  [8,5,9, 7,6,1, 4,2,3],
+  [4,2,6, 8,5,3, 7,9,1],
+  [7,1,3, 9,2,4, 8,5,6],
+
+  [9,6,1, 5,3,7, 2,8,4],
+  [2,8,7, 4,1,9, 6,3,5],
+  [3,4,5, 2,8,6, 1,7,9],
+];
+
+const table = document.getElementById('sudoku');
+const result = document.getElementById('result');
+
+function createBoard() {
+  table.innerHTML = '';
+  for(let i=0; i<9; i++) {
+    const tr = document.createElement('tr');
+    if ((i + 1) % 3 === 0 && i < 8) tr.classList.add('border-bottom');
+    for(let j=0; j<9; j++) {
+      const td = document.createElement('td');
+      if(puzzle[i][j] !== 0) {
+        td.textContent = puzzle[i][j];
+        td.classList.add('fixed');
+      } else {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 1;
+        input.dataset.row = i;
+        input.dataset.col = j;
+        input.oninput = function() {
+          this.value = this.value.replace(/[^1-9]/g,'');
+        };
+        td.appendChild(input);
+      }
+      if ((j + 1) % 3 === 0 && j < 8) td.classList.add('border-right');
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+}
+
+function getUserBoard() {
+  const board = [];
+  for(let i=0; i<9; i++) {
+    const row = [];
+    for(let j=0; j<9; j++) {
+      if (puzzle[i][j] !== 0) {
+        row.push(puzzle[i][j]);
+      } else {
+        const input = table.rows[i].cells[j].querySelector('input');
+        const val = input.value ? parseInt(input.value) : 0;
+        row.push(val);
+      }
+    }
+    board.push(row);
+  }
+  return board;
+}
+
+function checkAnswer() {
+  const userBoard = getUserBoard();
+  for(let i=0; i<9; i++) {
+    for(let j=0; j<9; j++) {
+      if(userBoard[i][j] === 0) {
+        result.textContent = "すべてのマスを埋めてください。";
+        return;
+      }
+    }
+  }
+  for(let i=0; i<9; i++) {
+    for(let j=0; j<9; j++) {
+      if(userBoard[i][j] !== solution[i][j]) {
+        result.textContent = "間違いがあります。";
+        return;
+      }
+    }
+  }
+  result.textContent = "正解です！おめでとう！";
+}
+
+createBoard();
+
+document.getElementById('checkBtn').onclick = checkAnswer;
+</script>
+
+</body>
+</html>
